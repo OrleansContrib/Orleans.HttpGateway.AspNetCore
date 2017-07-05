@@ -53,9 +53,9 @@ public interface ITestGrain : IGrainWithStringKey
 }
 ```
 
-parameters can be supplied by QueryParameters, e.g. `?p1=one&p2=true&p3=[a,b,c]`
+parameters can be supplied by QueryParameters for `GET` requests, e.g. `?p1=one&p2=true&p3=[a,b,c]`
 
-complex parameters can also be provided in the request body, names of the root elements must match the variable names in the GrainInterface and contenttype must be `application/json`:
+complex parameters can also be provided in the request body using `PUT` or `POST`, names of the root elements must match the variable names in the GrainInterface and contenttype must be `application/json`:
 
 ```json
 {
