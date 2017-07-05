@@ -47,13 +47,13 @@ given the following grain interface:
 ```csharp
 public interface ITestGrain : IGrainWithStringKey
 {
-    Task<int> TestGrainMethod(string p1, bool p2, int[]p3);
+    Task<int> TestGrainMethod(string p1, bool p2, string[]p3);
 }
 ```
 
 parameters can be supplied by QueryParameters, e.g. `?p1=one&p2=true&p3=[a,b,c]`
 
-complex parameters can also be provided in the request body, names of the root elements must match the variable names in the GrainInterface:
+complex parameters can also be provided in the request body, names of the root elements must match the variable names in the GrainInterface and contenttype must be `application/json`:
 
 ```json
 {
