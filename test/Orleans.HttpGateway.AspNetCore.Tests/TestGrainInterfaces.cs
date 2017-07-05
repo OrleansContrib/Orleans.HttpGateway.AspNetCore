@@ -19,6 +19,8 @@ namespace Orleans.HttpGateway.AspNetCore.Tests
         Task<object> PostObjectWithComplexImmutableParameters(Immutable<ComplexParameter1> p1);
 
         Task<object> PostObjectWithComplexParameters(ComplexParameter1 p1, string p2);
+
+        Task PostNoParametersNoResponse();
     }
 
 

@@ -194,6 +194,42 @@ namespace Orleans.HttpGateway.AspNetCore.Tests
             result.Value.ShouldBe(5);
         }
 
+        [Fact]
+        public async Task Invoke_PostNoParametersNoResponse_GET_Success()
+        {
+            var testGrain = new Mock<ITestGrain3>();
+            testGrain.Setup(x => x.PostNoParametersNoResponse()).Returns(() => Task.CompletedTask).Verifiable();
+
+            _factoryMock.Setup(x => x.GetGrain<ITestGrain3>(6, null)).Returns(testGrain.Object);
+
+            var response = await _client.GetAsync(
+                "Orleans.HttpGateway.AspNetCore.Tests.ITestGrain3/6/PostNoParametersNoResponse");
+
+            response.EnsureSuccessStatusCode();
+
+
+
+            testGrain.Verify();
+        }
+
+        [Fact]
+        public async Task Invoke_PostNoParametersNoResponse_POST_Success()
+        {
+            var testGrain = new Mock<ITestGrain3>();
+            testGrain.Setup(x => x.PostNoParametersNoResponse()).Returns(() => Task.CompletedTask).Verifiable();
+
+            _factoryMock.Setup(x => x.GetGrain<ITestGrain3>(6, null)).Returns(testGrain.Object);
+
+            var response = await _client.PostAsync(
+                "Orleans.HttpGateway.AspNetCore.Tests.ITestGrain3/6/PostNoParametersNoResponse", null);
+
+            response.EnsureSuccessStatusCode();
+
+
+
+            testGrain.Verify();
+        }
+
         public void Dispose()
         {
             _server.Dispose();
