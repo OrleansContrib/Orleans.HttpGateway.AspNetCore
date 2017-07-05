@@ -3,7 +3,9 @@ a http gateway for Microsoft Orleans.
 
 [![Build status](https://ci.appveyor.com/api/projects/status/6omov0335yw8a9c5?svg=true)](https://ci.appveyor.com/project/rikbosch/orleans-httpgateway-aspnetcore)
 
+## Installation
 
+`Install-Package Orleans.HttpGateway.AspNetCore`
 
 ## Configuring the gateway
 
