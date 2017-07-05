@@ -1,13 +1,14 @@
 ﻿using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Orleans.HttpGateway.AspNetCore.ParameterBinding
 {
     public interface IParameterBinder
     {
-        bool CanBind(ParameterInfo[] parameters, HttpContext context);
+        Task<bool> CanBind(ParameterInfo[] parameters, HttpRequest context);
 
-        object[] BindParameters(ParameterInfo[] parameters, HttpContext context);
+        Task<object[]> BindParameters(ParameterInfo[] parameters, HttpRequest context);
     }
 
 

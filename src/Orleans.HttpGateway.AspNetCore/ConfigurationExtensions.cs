@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Orleans.HttpGateway.AspNetCore.ParameterBinding;
 
 namespace Orleans.HttpGateway.AspNetCore
 {
@@ -34,6 +35,8 @@ namespace Orleans.HttpGateway.AspNetCore
                 options.Value.JsonSerializerSettings = app.ApplicationServices.GetService<JsonSerializerSettings>()
                     ??new JsonSerializerSettings();
             }
+
+            options.Value.JsonSerializerSettings.Converters.Add(new ImmutableConverter());
 
             routeBuilder.MapRoute(
                 "{grainInterface}/{grainId}/{grainMethod}",

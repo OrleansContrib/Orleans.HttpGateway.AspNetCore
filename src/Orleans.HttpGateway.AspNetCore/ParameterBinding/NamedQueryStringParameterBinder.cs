@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -17,25 +18,25 @@ namespace Orleans.HttpGateway.AspNetCore.ParameterBinding
     {
         readonly JsonSerializer _serializer;
 
-        public NamedQueryStringParameterBinder(JsonSerializerSettings settings)
+        public NamedQueryStringParameterBinder(JsonSerializer serializer)
         {
-            this._serializer = JsonSerializer.Create(settings);
+            this._serializer = serializer;
         }
 
 
-        public bool CanBind(ParameterInfo[] parameters, HttpContext context)
+        public Task<bool> CanBind(ParameterInfo[] parameters, HttpRequest request)
         {
-            if (parameters.Length == context.Request.Query.Count)
+            if (parameters.Length == request.Query.Count)
             {
                 //check parameter names
                 var source = parameters.Select(x => x.Name).ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
-                return source.SetEquals(context.Request.Query.Select(x => x.Key));
+                return Task.FromResult(source.SetEquals(request.Query.Select(x => x.Key)));
             }
 
-            return false;
+            return Task.FromResult(false);
         }
 
-        public object[] BindParameters(ParameterInfo[] parameters, HttpContext context)
+        public Task<object[]> BindParameters(ParameterInfo[] parameters, HttpRequest request)
         {
             var result = new object[parameters.Length];
 
@@ -44,7 +45,7 @@ namespace Orleans.HttpGateway.AspNetCore.ParameterBinding
                 var parameter = parameters[i];
 
                 //support named parameters in querystring
-                if (context.Request.Query.TryGetValue(parameter.Name, out StringValues value))
+                if (request.Query.TryGetValue(parameter.Name, out StringValues value))
                 {
                     if (parameter.ParameterType.IsArray)
                     {
@@ -62,7 +63,7 @@ namespace Orleans.HttpGateway.AspNetCore.ParameterBinding
                     }
                 }
             }
-            return result;
+            return Task.FromResult(result);
         }
 
         object Convert(string source, Type t)

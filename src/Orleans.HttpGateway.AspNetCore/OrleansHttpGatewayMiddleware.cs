@@ -14,7 +14,6 @@ namespace Orleans.HttpGateway.AspNetCore
     internal class OrleansHttpGatewayMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IGrainFactory _grainFactory;
         private readonly IGrainTypeProvider _grainTypeProvider;
         private readonly IGrainReferenceProvider _grainReferenceProvider;
         private readonly IDynamicGrainMethodInvoker _grainInvoker;
@@ -28,7 +27,6 @@ namespace Orleans.HttpGateway.AspNetCore
             if (config == null) throw new ArgumentNullException(nameof(config));
 
             this._next = next;
-            this._grainFactory = grainFactory;
 
             _grainTypeProvider =
                 new CachedGrainTypeProvider(
@@ -36,13 +34,16 @@ namespace Orleans.HttpGateway.AspNetCore
                         config.Value.Assemblies.Select(x => new AssemblyBasedGrainTypeProvider(x))
                     ));
 
+            _serializer = JsonSerializer.Create(config.Value.JsonSerializerSettings);
             _grainReferenceProvider = new ExpressionBasedGrainReferenceProvider(grainFactory);
             _grainInvoker = new DynamicGrainMethodInvoker(
-                new[] {new NamedQueryStringParameterBinder(config.Value.JsonSerializerSettings)}
-                );
-            _serializer = JsonSerializer.Create(config.Value.JsonSerializerSettings);
+                new IParameterBinder[]
+                {
+                    new JsonBodyParameterBinder(_serializer),   //order is important here, we expect application/json requests
+                    new NamedQueryStringParameterBinder(_serializer),
+                });
+          
         }
-
 
         public async Task Invoke(HttpContext context)
         {
@@ -53,11 +54,18 @@ namespace Orleans.HttpGateway.AspNetCore
             var grain = GetGrainReference(grainType, grainRouteValues.GrainId);
             var result = await _grainInvoker.Invoke(grainType, grain, grainRouteValues, context);
 
+            
+
             context.Response.StatusCode = 200;
             context.Response.ContentType = "application/json";
             using (var writer = new StreamWriter(context.Response.Body))
             {
                 _serializer.Serialize(writer, result);
+
+                // Perf: call FlushAsync to call WriteAsync on the stream with any content left in the TextWriter's
+                // buffers. This is better than just letting dispose handle it (which would result in a synchronous
+                // write).
+                await writer.FlushAsync();
             }
         }
 

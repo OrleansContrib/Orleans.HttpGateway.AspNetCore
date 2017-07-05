@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Orleans.Concurrency;
 
@@ -11,11 +12,20 @@ namespace Orleans.HttpGateway.AspNetCore.Tests
 
         Task<object> GetObjectWith2Parameters(int one, string two);
 
-        Task<object> GetObjectWith2ArrayParameters(int[]one, string[] two);
+        Task<object> GetObjectWith2ArrayParameters(int[] one, string[] two);
 
         Task<object> GetObjectWithEnumerableParameters(IEnumerable<int> one);
 
-        Task<object> GetObjectWithImmutableParameters(Immutable<int> one);
+        Task<object> PostObjectWithComplexImmutableParameters(Immutable<ComplexParameter1> p1);
+
+        Task<object> PostObjectWithComplexParameters(ComplexParameter1 p1, string p2);
+    }
+
+
+    public class ComplexParameter1
+    {
+        public string Key { get; set; }
+        public string Value { get; set; }
     }
 
     public interface ITestGrain1 : IGrainWithStringKey, ITestGrainMethods
@@ -29,6 +39,6 @@ namespace Orleans.HttpGateway.AspNetCore.Tests
         Task ExplicitTestMethod();
     }
 
-    public interface ITestGrain4 : IGrainWithIntegerCompoundKey , ITestGrainMethods { }
+    public interface ITestGrain4 : IGrainWithIntegerCompoundKey, ITestGrainMethods { }
     public interface ITestGrain5 : IGrainWithGuidCompoundKey, ITestGrainMethods { }
 }

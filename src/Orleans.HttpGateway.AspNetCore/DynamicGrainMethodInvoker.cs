@@ -30,12 +30,13 @@ namespace Orleans.HttpGateway.AspNetCore
                         .FirstOrDefault(x => string.Equals(x.Name, grainRouteValues.GrainMethod));
                     return ObjectMethodExecutor.Create(mi, grainType.GetTypeInfo());
                 });
-           
-            return await executor.ExecuteAsync(grain,
-                GetParameters(executor, context));
+
+            var parameters = await GetParameters(executor, context.Request);
+
+            return await executor.ExecuteAsync(grain, parameters);
         }
 
-        private object[] GetParameters(ObjectMethodExecutor executor, HttpContext context)
+        private async Task<object[]> GetParameters(ObjectMethodExecutor executor, HttpRequest request)
         {
             //short circuit if no parameters
             if (executor.MethodParameters == null || executor.MethodParameters.Length == 0)
@@ -43,27 +44,29 @@ namespace Orleans.HttpGateway.AspNetCore
                 return Array.Empty<object>();
             }
 
-
-            var suitableBinders = _parameterBinder.Where(x => x.CanBind(executor.MethodParameters, context));
+            // loop through binders, in order
+            // first suitable binder wins
+            // so the order of registration is important
 
             ExceptionDispatchInfo lastException = null;
-            foreach (var binder in suitableBinders)
+            foreach (var binder in _parameterBinder)
             {
                 try
                 {
-                    return binder.BindParameters(executor.MethodParameters, context);
+                    if (await binder.CanBind(executor.MethodParameters, request))
+                    {
+                        return await binder.BindParameters(executor.MethodParameters, request);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    //continue on next suitable binder
+                    // continue on next suitable binder
+                    // but keep the exception when no other suitable binders are found
                     lastException = ExceptionDispatchInfo.Capture(ex);
                 }
             }
 
-            if (lastException != null)
-            {
-                lastException.Throw();
-            }
+            lastException?.Throw();
 
             throw new InvalidOperationException("No suitable parameter binder found for request");
         }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Newtonsoft.Json;
+using Orleans.HttpGateway.AspNetCore.ParameterBinding;
 
 namespace Orleans.HttpGateway.AspNetCore
 {
@@ -9,9 +10,7 @@ namespace Orleans.HttpGateway.AspNetCore
     {
         public List<Assembly> Assemblies { get; } = new List<Assembly>();
 
-        public JsonSerializerSettings JsonSerializerSettings { get; set; } 
-
-
+        public JsonSerializerSettings JsonSerializerSettings { get; set; }
 
         public OrleansHttpGatewayOptions AddAssemblies(params Assembly[] assemblies)
         {

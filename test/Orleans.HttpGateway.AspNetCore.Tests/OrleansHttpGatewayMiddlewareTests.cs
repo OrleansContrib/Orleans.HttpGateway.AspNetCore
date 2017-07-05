@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,7 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Orleans.Concurrency;
 using Orleans.HttpGateway.AspNetCore;
+using Orleans.HttpGateway.AspNetCore.ParameterBinding;
 using Shouldly;
 using Xunit;
 
@@ -117,6 +120,78 @@ namespace Orleans.HttpGateway.AspNetCore.Tests
             ((bool)json.success).ShouldBeTrue();
 
             testGrain.Verify();
+        }
+
+        [Fact]
+        public async Task Invoke_PostObjectWithComplexParameters_Success()
+        {
+            var testGrain = new Mock<ITestGrain3>();
+            testGrain.Setup(x => x.PostObjectWithComplexParameters(
+                                            It.Is<ComplexParameter1>(p => p.Key == "sleutel" && p.Value == "waarde"),
+                                            "somestring"))
+                .Returns(() => Task.FromResult<object>(new
+                {
+                    success = true
+                })).Verifiable();
+
+            _factoryMock.Setup(x => x.GetGrain<ITestGrain3>(6, null)).Returns(testGrain.Object);
+
+            string jsonRequest = @"{  
+   ""p1"":{  
+      ""key"":""sleutel"",
+      ""value"":""waarde""
+   },
+   ""p2"":""somestring""
+}";
+            var response = await _client.PostAsync(
+                "Orleans.HttpGateway.AspNetCore.Tests.ITestGrain3/6/PostObjectWithComplexParameters",
+                new StringContent(jsonRequest, Encoding.UTF8, "application/json")
+                );
+
+            testGrain.Verify();
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+            dynamic json = JObject.Parse(responseJson);
+
+            ((bool)json.success).ShouldBeTrue();
+
+        }
+
+        [Fact]
+        public async Task Invoke_PostObjectWithComplexImmutableParameters_Success()
+        {
+            var testGrain = new Mock<ITestGrain3>();
+            testGrain.Setup(x => x.PostObjectWithComplexImmutableParameters(
+                    It.Is<Immutable<ComplexParameter1>>(p => p.Value.Key == "sleutel" && p.Value.Value == "waarde")))
+                .Returns(() => Task.FromResult<object>(new
+                {
+                    success = new Immutable<int>(5)
+                })).Verifiable();
+
+            _factoryMock.Setup(x => x.GetGrain<ITestGrain3>(6, null)).Returns(testGrain.Object);
+
+            string jsonRequest = @"{  
+   ""p1"":{  
+      ""key"":""sleutel"",
+      ""value"":""waarde""
+   }}";
+            var response = await _client.PostAsync(
+                "Orleans.HttpGateway.AspNetCore.Tests.ITestGrain3/6/PostObjectWithComplexImmutableParameters",
+                new StringContent(jsonRequest, Encoding.UTF8, "application/json")
+            );
+
+            testGrain.Verify();
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+            var json = JToken.Parse(responseJson);
+
+            var settings = new JsonSerializerSettings();
+            settings.Converters.Add(new ImmutableConverter());
+            var serializer = JsonSerializer.Create(settings);
+            
+
+            var result = json["success"].ToObject<Immutable<int>>(serializer);
+            result.Value.ShouldBe(5);
         }
 
         public void Dispose()
