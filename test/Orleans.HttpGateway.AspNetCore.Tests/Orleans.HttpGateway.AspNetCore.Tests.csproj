@@ -11,6 +11,8 @@
     <DefineConstants>DEBUG;TRACE;NET462</DefineConstants>
     <DebugType>full</DebugType>
     <DebugSymbols>True</DebugSymbols>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>bin\Debug\net461\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
