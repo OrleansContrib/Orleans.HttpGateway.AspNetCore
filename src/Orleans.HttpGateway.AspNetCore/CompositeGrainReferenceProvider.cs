@@ -19,6 +19,4 @@ namespace Orleans.HttpGateway.AspNetCore
                 .FirstOrDefault(x => x != null);
         }
     }
-
-
 }
