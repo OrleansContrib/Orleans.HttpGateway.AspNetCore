@@ -11,15 +11,15 @@ using Orleans.HttpGateway.AspNetCore.ParameterBinding;
 
 namespace Orleans.HttpGateway.AspNetCore
 {
-    public static class OrleansHttpGatewayMiddleware
+    public class OrleansHttpGatewayMiddleware
     {
-        private static IGrainTypeProvider _grainTypeProvider;
-        private static IGrainReferenceProvider _grainReferenceProvider;
-        private static IDynamicGrainMethodInvoker _grainInvoker;
-        private static JsonSerializer _serializer;
+        private readonly IGrainTypeProvider _grainTypeProvider;
+        private readonly IGrainReferenceProvider _grainReferenceProvider;
+        private readonly IDynamicGrainMethodInvoker _grainInvoker;
+        private readonly JsonSerializer _serializer;
+        private readonly RequestDelegate _next;
 
-        public static void Intialize(IGrainFactory grainFactory,
-            IOptions<OrleansHttpGatewayOptions> config)
+        public OrleansHttpGatewayMiddleware(RequestDelegate next,IOptions<OrleansHttpGatewayOptions> config, IGrainFactory grainFactory)
         {
             if (grainFactory == null) throw new ArgumentNullException(nameof(grainFactory));
             if (config == null) throw new ArgumentNullException(nameof(config));
@@ -35,10 +35,10 @@ namespace Orleans.HttpGateway.AspNetCore
                     new JsonBodyParameterBinder(_serializer),   //order is important here, we expect application/json requests
                     new NamedQueryStringParameterBinder(_serializer),
                 });
-
+            _next = next;
         }
 
-        public static async Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext context)
         {
             var data = context.GetRouteData();
             var grainRouteValues = new GrainRouteValues(data);
