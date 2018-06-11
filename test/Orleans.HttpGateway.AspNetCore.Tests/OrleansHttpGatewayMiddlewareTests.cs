@@ -2,7 +2,6 @@
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +9,6 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Orleans.Concurrency;
-using Orleans.HttpGateway.AspNetCore;
 using Orleans.HttpGateway.AspNetCore.ParameterBinding;
 using Shouldly;
 using Xunit;
@@ -72,6 +70,7 @@ namespace Orleans.HttpGateway.AspNetCore.Tests
             var response = await _client.GetAsync(
                 "Orleans.HttpGateway.AspNetCore.Tests.ITestGrain3/6/GetObjectWith2Parameters?one=1&two=okay");
 
+            response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
             dynamic json = JObject.Parse(await response.Content.ReadAsStringAsync());
 
             ((bool)json.success).ShouldBeTrue();
@@ -92,7 +91,8 @@ namespace Orleans.HttpGateway.AspNetCore.Tests
 
             var response = await _client.GetAsync(
                 "Orleans.HttpGateway.AspNetCore.Tests.ITestGrain3/6/GetObjectWith2ArrayParameters?one=1&one=2&two=okay&two=dan");
-
+            
+            response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
             dynamic json = JObject.Parse(await response.Content.ReadAsStringAsync());
 
             ((bool)json.success).ShouldBeTrue();
@@ -115,6 +115,7 @@ namespace Orleans.HttpGateway.AspNetCore.Tests
             var response = await _client.GetAsync(
                 "Orleans.HttpGateway.AspNetCore.Tests.ITestGrain3/6/GetObjectWithEnumerableParameters?one=[1,2]");
 
+            response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
             dynamic json = JObject.Parse(await response.Content.ReadAsStringAsync());
 
             ((bool)json.success).ShouldBeTrue();
@@ -148,6 +149,8 @@ namespace Orleans.HttpGateway.AspNetCore.Tests
                 new StringContent(jsonRequest, Encoding.UTF8, "application/json")
                 );
 
+
+            response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
             testGrain.Verify();
 
             var responseJson = await response.Content.ReadAsStringAsync();
@@ -179,6 +182,8 @@ namespace Orleans.HttpGateway.AspNetCore.Tests
                 "Orleans.HttpGateway.AspNetCore.Tests.ITestGrain3/6/PostObjectWithComplexImmutableParameters",
                 new StringContent(jsonRequest, Encoding.UTF8, "application/json")
             );
+
+            response.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
 
             testGrain.Verify();
 

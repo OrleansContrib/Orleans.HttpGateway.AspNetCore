@@ -30,7 +30,7 @@ namespace Orleans.HttpGateway.AspNetCore.ParameterBinding
 
             //parse mediatype
             var requestContentType = request.GetTypedHeaders().ContentType;
-            if (requestContentType.MediaType == "application/json" && parameters.Length > 0)
+            if (requestContentType?.MediaType == "application/json" && parameters.Length > 0)
                 return Task.FromResult(true);
 
             return Task.FromResult(false);

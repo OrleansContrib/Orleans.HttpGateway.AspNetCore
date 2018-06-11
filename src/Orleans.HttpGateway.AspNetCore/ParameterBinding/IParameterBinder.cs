@@ -10,6 +10,4 @@ namespace Orleans.HttpGateway.AspNetCore.ParameterBinding
 
         Task<object[]> BindParameters(ParameterInfo[] parameters, HttpRequest context);
     }
-
-
 }
