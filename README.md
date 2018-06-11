@@ -1,7 +1,9 @@
 # Orleans.HttpGateway.AspNetCore
 a http gateway for Microsoft Orleans.
 
-[![Build status](https://ci.appveyor.com/api/projects/status/6omov0335yw8a9c5?svg=true)](https://ci.appveyor.com/project/rikbosch/orleans-httpgateway-aspnetcore)
+[![Build status](https://ci.appveyor.com/api/projects/status/6omov0335yw8a9c5?svg=true)](https://ci.appveyor.com/project/rikbosch/orleans-httpgateway-aspnetcore) [![Nuget version](https://img.shields.io/nuget/v/Orleans.HttpGateway.AspNetCore.svg)](https://www.nuget.org/packages/Orleans.HttpGateway.AspNetCore)
+
+
 
 ## Installation
 
